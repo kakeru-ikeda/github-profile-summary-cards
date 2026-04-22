@@ -61,24 +61,42 @@ export function createProductiveCard(chartData: number[], theme: Theme, utcOffse
         )
         .call(d3.axisLeft(y).ticks(5));
 
-    chartPanel
+    const bars = chartPanel
         .selectAll('.bar')
         .data(chartData)
         .enter()
         .append('rect')
         .attr('class', 'bar')
-        .style('hover', 'green')
         .attr('fill', theme.chart)
+        .style('filter', 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25))')
         .attr('x', function (_, index) {
             return bottomScaleBand(index)!;
         })
-        .attr('y', function (d) {
-            return y(Number(d));
-        })
+        .attr('y', chartHeight)
         .attr('width', bottomScaleBand.bandwidth())
-        .attr('height', function (d) {
-            return chartHeight - y(Number(d));
-        });
+        .attr('height', 0);
+
+    bars.nodes().forEach((node: any, index: number) => {
+        const bar = d3.select(node);
+        const value = Number(chartData[index]);
+        const targetY = y(value);
+        const targetH = chartHeight - targetY;
+        const begin = `${0.2 + index * 0.04}s`;
+        bar.append('animate')
+            .attr('attributeName', 'y')
+            .attr('from', `${chartHeight}`)
+            .attr('to', `${targetY}`)
+            .attr('dur', '0.8s')
+            .attr('begin', begin)
+            .attr('fill', 'freeze');
+        bar.append('animate')
+            .attr('attributeName', 'height')
+            .attr('from', '0')
+            .attr('to', `${targetH}`)
+            .attr('dur', '0.8s')
+            .attr('begin', begin)
+            .attr('fill', 'freeze');
+    });
 
     chartPanel
         .append('g')

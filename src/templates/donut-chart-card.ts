@@ -27,20 +27,29 @@ export function createDonutChartCard(
 
     const panel = svg.append('g').attr('transform', `translate(${card.xPadding + margin},${0})`);
     const labelHeight = 14;
-    panel
+    const legendRects = panel
         .selectAll(null)
         .data(pieData)
         .enter()
         .append('rect')
-        .attr('y', d => labelHeight * d.index * 1.8 + card.height / 2 - radius - 12) // rect y-coordinate need fix,so I decrease y, but I don't know why this need fix.
+        .attr('y', d => labelHeight * d.index * 1.8 + card.height / 2 - radius - 12)
         .attr('width', labelHeight)
         .attr('height', labelHeight)
         .attr('fill', pieData => pieData.data.color)
         .attr('stroke', `${theme.background}`)
-        .style('stroke-width', '1px');
+        .style('stroke-width', '1px')
+        .style('opacity', 0);
+    legendRects.nodes().forEach((node, index) => {
+        d3.select(node as Element)
+            .append('animate')
+            .attr('attributeName', 'opacity')
+            .attr('values', '0;1')
+            .attr('dur', '0.5s')
+            .attr('begin', `${0.2 + index * 0.06}s`)
+            .attr('fill', 'freeze');
+    });
 
-    // set language text
-    panel
+    const legendTexts = panel
         .selectAll(null)
         .data(pieData)
         .enter()
@@ -51,7 +60,17 @@ export function createDonutChartCard(
         .attr('x', labelHeight * 1.2)
         .attr('y', d => labelHeight * d.index * 1.8 + card.height / 2 - radius)
         .style('fill', theme.text)
-        .style('font-size', `${labelHeight}px`);
+        .style('font-size', `${labelHeight}px`)
+        .style('opacity', 0);
+    legendTexts.nodes().forEach((node, index) => {
+        d3.select(node as Element)
+            .append('animate')
+            .attr('attributeName', 'opacity')
+            .attr('values', '0;1')
+            .attr('dur', '0.5s')
+            .attr('begin', `${0.25 + index * 0.06}s`)
+            .attr('fill', 'freeze');
+    });
 
     // draw pie chart
     const g = svg
@@ -66,12 +85,31 @@ export function createDonutChartCard(
         .append('g')
         .attr('class', 'arc');
 
-    g.append('path')
+    const piePaths = g
+        .append('path')
         .attr('d', arc)
         .style('fill', function (pieData) {
             return pieData.data.color;
         })
         .attr('stroke', `${theme.background}`)
-        .style('stroke-width', '2px');
+        .style('stroke-width', '2px')
+        .style('opacity', 0)
+        .style('filter', 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25))');
+    piePaths.nodes().forEach((node, index) => {
+        const path = d3.select(node as Element);
+        path.append('animate')
+            .attr('attributeName', 'opacity')
+            .attr('values', '0;1')
+            .attr('dur', '0.8s')
+            .attr('begin', `${0.15 + index * 0.08}s`)
+            .attr('fill', 'freeze');
+        path.append('animateTransform')
+            .attr('attributeName', 'transform')
+            .attr('type', 'scale')
+            .attr('values', '0.6;1')
+            .attr('dur', '0.8s')
+            .attr('begin', `${0.15 + index * 0.08}s`)
+            .attr('fill', 'freeze');
+    });
     return card.toString();
 }

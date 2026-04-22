@@ -19,7 +19,7 @@ export function createDetailCard(
     // draw icon
     const panel = svg.append('g').attr('transform', `translate(30,30)`);
     const labelHeight = 14;
-    panel
+    const iconGroups = panel
         .selectAll(null)
         .data(userDetails)
         .enter()
@@ -31,21 +31,71 @@ export function createDetailCard(
         .attr('width', labelHeight)
         .attr('height', labelHeight)
         .attr('fill', theme.icon)
+        .style('filter', 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.25))')
         .html(d => d.icon);
 
-    // draw text
-    panel
+    iconGroups.nodes().forEach((node: any, index: number) => {
+        const g = d3.select(node);
+        const yPos = labelHeight * index * 2;
+        const begin = `${index * 0.08}s`;
+        g.append('animate')
+            .attr('attributeName', 'opacity')
+            .attr('values', '0;1')
+            .attr('dur', '0.6s')
+            .attr('begin', begin)
+            .attr('fill', 'freeze');
+        g.append('animateTransform')
+            .attr('attributeName', 'transform')
+            .attr('type', 'translate')
+            .attr('values', `-16,${yPos};0,${yPos}`)
+            .attr('dur', '0.6s')
+            .attr('begin', begin)
+            .attr('fill', 'freeze');
+    });
+
+    const valueTexts = panel
         .selectAll(null)
         .data(userDetails)
         .enter()
         .append('text')
-        .text(d => {
-            return d.value;
-        })
         .attr('x', labelHeight * 1.5)
         .attr('y', d => labelHeight * d.index * 2 + labelHeight)
         .style('fill', theme.text)
         .style('font-size', `${labelHeight}px`);
+
+    valueTexts.nodes().forEach((node: any, index: number) => {
+        const t = d3.select(node);
+        const data = userDetails[index];
+        const finalValue = data.value;
+        const numericMatch = finalValue.match(/^(-?\d+)(.*)$/);
+        const begin = `${index * 0.08 + 0.15}s`;
+
+        t.append('animate')
+            .attr('attributeName', 'opacity')
+            .attr('values', '0;1')
+            .attr('dur', '0.6s')
+            .attr('begin', begin)
+            .attr('fill', 'freeze');
+
+        if (!numericMatch) {
+            t.text(finalValue);
+            return;
+        }
+        const targetNum = parseInt(numericMatch[1], 10);
+        const suffix = numericMatch[2];
+        const steps = Math.min(20, Math.max(8, Math.abs(targetNum)));
+        t.text(`0${suffix}`);
+        const dur = 1.2;
+        const stepDur = dur / steps;
+        for (let i = 1; i <= steps; i++) {
+            const v = Math.round((targetNum * i) / steps);
+            t.append('set')
+                .attr('attributeName', 'textContent')
+                .attr('to', `${v}${suffix}`)
+                .attr('begin', `${index * 0.08 + 0.15 + stepDur * i}s`)
+                .attr('fill', 'freeze');
+        }
+    });
 
     // process chart data
     const lineChartData: {contributionCount: number; date: Date}[] = [];
@@ -112,8 +162,15 @@ export function createDetailCard(
         .attr('transform', `translate(${-chartRightMargin},0)`)
         .attr('stroke', theme.chart)
         .attr('fill', theme.chart)
-        .attr('opacity', 1)
-        .attr('d', valueline);
+        .attr('opacity', 0)
+        .style('filter', 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25))')
+        .attr('d', valueline)
+        .append('animate')
+        .attr('attributeName', 'opacity')
+        .attr('values', '0;1')
+        .attr('dur', '1.0s')
+        .attr('begin', '0.4s')
+        .attr('fill', 'freeze');
 
     // Add the X Axis
     const xAxis = d3
