@@ -95,5 +95,5 @@ ThemeMap.set('vision_friendly_dark', new Theme('#ffb000', '#ffffff', '#000000', 
 ThemeMap.set('vue', new Theme('#41b883', '#000000', '#ffffff', '#e4e2e2', 1, '#41b883', '#41b883'));
 ThemeMap.set('yeblu', new Theme('#ffff00', '#ffffff', '#002046', '#000000', 0, '#ffff00', '#ffff00'));
 ThemeMap.set('zenburn', new Theme('#f0dfaf', '#dcdccc', '#3f3f3f', '#3f3f3f', 1, '#8cd0d3', '#7f9f7f'));
-// Custom theme: megumi - Angel white (#c8c2c6) main + crimson red (#e63946) accent on transparent background
-ThemeMap.set('megumi', new Theme('#c8c2c6', '#c8c2c6', '#ffffff00', '#ffffff00', 0, '#c8c2c6', '#e63946'));
+// Custom theme: megumi - Angel white (#c8c2c6) main + crimson red (#e63946) accent on dark navy background
+ThemeMap.set('megumi', new Theme('#c8c2c6', '#c8c2c6', '#1a1d24', '#e63946', 1, '#c8c2c6', '#e63946'));
