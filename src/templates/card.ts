@@ -29,17 +29,7 @@ export class Card {
         this.svg.append('style').html(
             `* {
           font-family: 'Segoe UI', Ubuntu, "Helvetica Neue", Sans-Serif
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to   { opacity: 1; }
-        }
-        @keyframes slideInLeft {
-          from { opacity: 0; transform: translateX(-12px); }
-          to   { opacity: 1; transform: translateX(0); }
-        }
-        text { animation: fadeIn 0.8s ease-out both; }
-        .card-title { animation: slideInLeft 0.6s ease-out both; }`
+        }`
         );
         const strokeWidth = 1;
         this.svg
