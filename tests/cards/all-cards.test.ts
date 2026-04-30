@@ -64,6 +64,10 @@ describe('Cards Generation (Integration)', () => {
             '0-profile-details',
             expect.stringContaining('<svg')
         );
+
+        const svg = mockWriteSVG.mock.calls[0][2];
+        expect(svg).toContain('10 Public Repos');
+        expect(svg).not.toContain('>0 Public Repos<');
     });
 
     it('createReposPerLanguageCard should write SVG', async () => {
