@@ -1,3 +1,4 @@
+import axios from 'axios';
 import request from '../utils/request';
 
 export class ProfileDetails {
@@ -89,10 +90,22 @@ const fetcher = (token: string, variables: any) => {
     );
 };
 
-export async function getProfileDetails(username: string, token: string): Promise<ProfileDetails> {
-    const res = await fetcher(token, {
-        login: username
+const fetchPublicRepoCount = async (username: string, token: string): Promise<number> => {
+    const res = await axios.get(`https://api.github.com/users/${username}`, {
+        headers: {
+            Authorization: `bearer ${token}`
+        }
     });
+    return res.data.public_repos;
+};
+
+export async function getProfileDetails(username: string, token: string): Promise<ProfileDetails> {
+    const [res, publicRepoCount] = await Promise.all([
+        fetcher(token, {
+            login: username
+        }),
+        fetchPublicRepoCount(username, token)
+    ]);
 
     if (res.data.errors) {
         throw Error(res.data.errors[0].message || 'GetProfileDetails failed');
@@ -100,7 +113,7 @@ export async function getProfileDetails(username: string, token: string): Promis
 
     const user = res.data.data.user;
     const profileDetails = new ProfileDetails(user.id, user.name, user.email, user.createdAt);
-    profileDetails.totalPublicRepos = user.repositories.totalCount;
+    profileDetails.totalPublicRepos = publicRepoCount;
     profileDetails.totalStars = user.repositories.nodes.reduce(
         (stars: number, curr: {stargazers: {totalCount: number}}) => {
             return stars + curr.stargazers.totalCount;

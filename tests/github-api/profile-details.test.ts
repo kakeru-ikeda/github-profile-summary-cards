@@ -63,6 +63,10 @@ const error = {
     ]
 };
 
+const restData = {
+    public_repos: 29
+};
+
 afterEach(() => {
     mock.reset();
 });
@@ -70,6 +74,7 @@ afterEach(() => {
 describe('github api for profile details', () => {
     it('should get correct profile data', async () => {
         mock.onPost('https://api.github.com/graphql').reply(200, data);
+        mock.onGet('https://api.github.com/users/vn7n24fzkq').reply(200, restData);
         const profileDetails = await getProfileDetails('vn7n24fzkq', 'token');
         expect(profileDetails).toEqual({
             id: 'userID',
@@ -81,7 +86,7 @@ describe('github api for profile details', () => {
             websiteUrl: null,
             twitterUsername: null,
             contributionYears: [2019, 2020],
-            totalPublicRepos: 30,
+            totalPublicRepos: 29,
             totalStars: 130,
             totalIssueContributions: 10,
             totalPullRequestContributions: 40,
@@ -105,6 +110,7 @@ describe('github api for profile details', () => {
 
     it('should throw error when api failed', async () => {
         mock.onPost('https://api.github.com/graphql').reply(200, error);
+        mock.onGet('https://api.github.com/users/vn7n24fzkq').reply(200, restData);
         await expect(getProfileDetails('vn7n24fzkq', 'token')).rejects.toThrow('GitHub api failed');
     });
 });
