@@ -1252,7 +1252,12 @@ function getProfileDetails(username, token) {
             fetchPublicProfile(username, token)
         ]);
         if (res.data.errors) {
-            throw Error(res.data.errors[0].message || 'GetProfileDetails failed');
+            // Include the field path: scope-restricted fields are non-null in the schema,
+            // so a single denied field nullifies the whole user object.
+            const detail = res.data.errors
+                .map((e) => { var _a, _b; return `${((_a = e.path) !== null && _a !== void 0 ? _a : []).join('.')}: ${(_b = e.message) !== null && _b !== void 0 ? _b : ''}`; })
+                .join(' | ');
+            throw Error(detail.trim() ? detail : 'GetProfileDetails failed');
         }
         const user = res.data.data.user;
         const profileDetails = new ProfileDetails(user.id, user.name, publicProfile.email, user.createdAt);

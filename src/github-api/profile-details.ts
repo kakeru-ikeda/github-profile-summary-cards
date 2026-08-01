@@ -110,7 +110,12 @@ export async function getProfileDetails(username: string, token: string): Promis
     ]);
 
     if (res.data.errors) {
-        throw Error(res.data.errors[0].message || 'GetProfileDetails failed');
+        // Include the field path: scope-restricted fields are non-null in the schema,
+        // so a single denied field nullifies the whole user object.
+        const detail = res.data.errors
+            .map((e: {message?: string; path?: string[]}) => `${(e.path ?? []).join('.')}: ${e.message ?? ''}`)
+            .join(' | ');
+        throw Error(detail.trim() ? detail : 'GetProfileDetails failed');
     }
 
     const user = res.data.data.user;
