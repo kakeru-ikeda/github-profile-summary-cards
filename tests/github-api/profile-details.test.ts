@@ -8,7 +8,6 @@ const data = {
         user: {
             id: 'userID',
             name: 'vn7',
-            email: 'vn7n24fzkq@gmail.com',
             createdAt: '2016-07-01T10:46:25Z',
             twitterUsername: null,
             company: 'vn7',
@@ -64,7 +63,8 @@ const error = {
 };
 
 const restData = {
-    public_repos: 29
+    public_repos: 29,
+    email: 'vn7n24fzkq@gmail.com'
 };
 
 afterEach(() => {

@@ -47,7 +47,6 @@ const fetcher = (token: string, variables: any) => {
         user(login: $login) {
             id
             name
-            email
             createdAt
             twitterUsername
             company
@@ -90,21 +89,24 @@ const fetcher = (token: string, variables: any) => {
     );
 };
 
-const fetchPublicRepoCount = async (username: string, token: string): Promise<number> => {
+// User.email is non-null in the GraphQL schema and requires the user:email/read:user scope,
+// so a token without it (e.g. the Actions GITHUB_TOKEN) nullifies the whole user object.
+// The REST user endpoint exposes the same public email without any extra scope.
+const fetchPublicProfile = async (username: string, token: string): Promise<{publicRepos: number; email: string}> => {
     const res = await axios.get(`https://api.github.com/users/${username}`, {
         headers: {
             Authorization: `bearer ${token}`
         }
     });
-    return res.data.public_repos;
+    return {publicRepos: res.data.public_repos, email: res.data.email ?? ''};
 };
 
 export async function getProfileDetails(username: string, token: string): Promise<ProfileDetails> {
-    const [res, publicRepoCount] = await Promise.all([
+    const [res, publicProfile] = await Promise.all([
         fetcher(token, {
             login: username
         }),
-        fetchPublicRepoCount(username, token)
+        fetchPublicProfile(username, token)
     ]);
 
     if (res.data.errors) {
@@ -112,8 +114,8 @@ export async function getProfileDetails(username: string, token: string): Promis
     }
 
     const user = res.data.data.user;
-    const profileDetails = new ProfileDetails(user.id, user.name, user.email, user.createdAt);
-    profileDetails.totalPublicRepos = publicRepoCount;
+    const profileDetails = new ProfileDetails(user.id, user.name, publicProfile.email, user.createdAt);
+    profileDetails.totalPublicRepos = publicProfile.publicRepos;
     profileDetails.totalStars = user.repositories.nodes.reduce(
         (stars: number, curr: {stargazers: {totalCount: number}}) => {
             return stars + curr.stargazers.totalCount;
