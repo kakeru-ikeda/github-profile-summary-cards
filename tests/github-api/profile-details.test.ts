@@ -15,7 +15,7 @@ const data = {
             websiteUrl: null,
             repositories: {
                 totalCount: 30,
-                nodes: [{stargazers: {totalCount: 110}}, {stargazers: {totalCount: 20}}]
+                nodes: [{stargazerCount: 110}, {stargazerCount: 20}]
             },
             issues: {totalCount: 10},
             repositoriesContributedTo: {totalCount: 30},

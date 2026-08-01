@@ -55,9 +55,7 @@ const fetcher = (token: string, variables: any) => {
             repositories(first: 100,privacy:PUBLIC, isFork: false, ownerAffiliations: OWNER, orderBy: {direction: DESC, field: STARGAZERS}) {
               totalCount
               nodes {
-                stargazers {
-                  totalCount
-                }
+                stargazerCount
               }
             }
             contributionsCollection {
@@ -122,8 +120,8 @@ export async function getProfileDetails(username: string, token: string): Promis
     const profileDetails = new ProfileDetails(user.id, user.name, publicProfile.email, user.createdAt);
     profileDetails.totalPublicRepos = publicProfile.publicRepos;
     profileDetails.totalStars = user.repositories.nodes.reduce(
-        (stars: number, curr: {stargazers: {totalCount: number}}) => {
-            return stars + curr.stargazers.totalCount;
+        (stars: number, curr: {stargazerCount: number}) => {
+            return stars + curr.stargazerCount;
         },
         0
     );
