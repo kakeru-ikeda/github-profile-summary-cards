@@ -47,7 +47,6 @@ const fetcher = (token: string, variables: any) => {
         user(login: $login) {
             id
             name
-            email
             createdAt
             twitterUsername
             company
@@ -56,9 +55,7 @@ const fetcher = (token: string, variables: any) => {
             repositories(first: 100,privacy:PUBLIC, isFork: false, ownerAffiliations: OWNER, orderBy: {direction: DESC, field: STARGAZERS}) {
               totalCount
               nodes {
-                stargazers {
-                  totalCount
-                }
+                stargazerCount
               }
             }
             contributionsCollection {
@@ -90,33 +87,41 @@ const fetcher = (token: string, variables: any) => {
     );
 };
 
-const fetchPublicRepoCount = async (username: string, token: string): Promise<number> => {
+// User.email is non-null in the GraphQL schema and requires the user:email/read:user scope,
+// so a token without it (e.g. the Actions GITHUB_TOKEN) nullifies the whole user object.
+// The REST user endpoint exposes the same public email without any extra scope.
+const fetchPublicProfile = async (username: string, token: string): Promise<{publicRepos: number; email: string}> => {
     const res = await axios.get(`https://api.github.com/users/${username}`, {
         headers: {
             Authorization: `bearer ${token}`
         }
     });
-    return res.data.public_repos;
+    return {publicRepos: res.data.public_repos, email: res.data.email ?? ''};
 };
 
 export async function getProfileDetails(username: string, token: string): Promise<ProfileDetails> {
-    const [res, publicRepoCount] = await Promise.all([
+    const [res, publicProfile] = await Promise.all([
         fetcher(token, {
             login: username
         }),
-        fetchPublicRepoCount(username, token)
+        fetchPublicProfile(username, token)
     ]);
 
     if (res.data.errors) {
-        throw Error(res.data.errors[0].message || 'GetProfileDetails failed');
+        // Include the field path: scope-restricted fields are non-null in the schema,
+        // so a single denied field nullifies the whole user object.
+        const detail = res.data.errors
+            .map((e: {message?: string; path?: string[]}) => `${(e.path ?? []).join('.')}: ${e.message ?? ''}`)
+            .join(' | ');
+        throw Error(detail.trim() ? detail : 'GetProfileDetails failed');
     }
 
     const user = res.data.data.user;
-    const profileDetails = new ProfileDetails(user.id, user.name, user.email, user.createdAt);
-    profileDetails.totalPublicRepos = publicRepoCount;
+    const profileDetails = new ProfileDetails(user.id, user.name, publicProfile.email, user.createdAt);
+    profileDetails.totalPublicRepos = publicProfile.publicRepos;
     profileDetails.totalStars = user.repositories.nodes.reduce(
-        (stars: number, curr: {stargazers: {totalCount: number}}) => {
-            return stars + curr.stargazers.totalCount;
+        (stars: number, curr: {stargazerCount: number}) => {
+            return stars + curr.stargazerCount;
         },
         0
     );

@@ -8,7 +8,6 @@ const data = {
         user: {
             id: 'userID',
             name: 'vn7',
-            email: 'vn7n24fzkq@gmail.com',
             createdAt: '2016-07-01T10:46:25Z',
             twitterUsername: null,
             company: 'vn7',
@@ -16,7 +15,7 @@ const data = {
             websiteUrl: null,
             repositories: {
                 totalCount: 30,
-                nodes: [{stargazers: {totalCount: 110}}, {stargazers: {totalCount: 20}}]
+                nodes: [{stargazerCount: 110}, {stargazerCount: 20}]
             },
             issues: {totalCount: 10},
             repositoriesContributedTo: {totalCount: 30},
@@ -64,7 +63,8 @@ const error = {
 };
 
 const restData = {
-    public_repos: 29
+    public_repos: 29,
+    email: 'vn7n24fzkq@gmail.com'
 };
 
 afterEach(() => {
